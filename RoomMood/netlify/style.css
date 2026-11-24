@@ -1,0 +1,903 @@
+:root {
+  --primary-color: #364940;
+  --bg-color: #faf8f5;
+  --card-bg: #ffffff;
+  --text-main: #2c3e50;
+  --text-muted: #7f8c8d;
+  --border-radius: 16px;
+  --accent: #6ba089;
+  --muted-2: #a6b0ad;
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+}
+
+.btn-link[aria-expanded="true"]::after,
+.btn-link[aria-expanded="false"]::after {
+  content: ' ▾';
+  margin-left:6px;
+}
+
+.past-year > button,
+.past-year button,
+.past-year .btn-link,
+.past-year .btn-link::after {
+  cursor: pointer;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-sans);
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+/* App container with fixed design size which will be scaled by JS */
+#app-container {
+  width: 480px;
+  height: 900px;
+  transform-origin: center center;
+  /* avoid creating a stacking context that clips fixed children when modal-open is active */
+  transform: none;
+}
+/* Screen Management */
+.screen {
+  display: none;
+  width: 100%;
+  max-width: 480px;
+  height: 100vh;
+  max-height: 900px; /* Begrenzt die Höhe auf großen Bildschirmen */
+  background-color: var(--bg-color);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  border-radius: 16px;
+  z-index: 0;
+}
+
+.screen.active {
+  display: flex;
+  flex-direction: column;
+  z-index: 1;
+}
+
+/* Splash Screen */
+#starting-page {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+/* Only show large splash logo when its screen is active; prevents accidental overlay */
+.screen .logo-png-large { display: none; }
+.screen.active .logo-png-large { display: block; }
+
+.logo-placeholder {
+  font-size: 80px;
+  margin-bottom: 20px;
+}
+
+.tagline {
+  font-size: 1rem;
+  color: var(--primary-color);
+  font-weight: 600;
+  padding: 0 40px;
+  line-height: 1.4;
+}
+
+.spinner {
+  margin-top: 40px;
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(54, 73, 68, 0.2);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Container & Cards */
+.container {
+  padding: 24px;
+  width: 100%;
+  overflow-y: auto;
+}
+
+.center-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+}
+
+.card {
+  background: var(--card-bg);
+  padding: 12px;
+  border-radius: var(--border-radius);
+  box-shadow: 0 6px 24px rgba(38,53,49,0.06);
+  margin-bottom: 16px;
+}
+
+.card.clickable {
+  cursor: pointer;
+}
+
+/* Registration Form */
+.logo-small {
+  font-size: 50px;
+  margin-bottom: 10px;
+}
+
+h2 {
+  color: var(--primary-color);
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.subtitle {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: var(--primary-color);
+  margin-bottom: 6px;
+}
+
+input[type="text"], input[type="date"], input[type="password"], select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  background: #f0f0f0;
+  font-size: 1rem;
+}
+
+/* UI Elements */
+.segmented-control {
+  display: flex;
+  background: #e8e8e8;
+  border-radius: 10px;
+  padding: 2px;
+  margin-bottom: 20px;
+}
+
+.segmented-control button {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  background: transparent;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.segmented-control button.active {
+  background: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-primary {
+  background: linear-gradient(180deg, var(--accent), var(--primary-color));
+  color: white;
+  border: none;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.98rem;
+  cursor: pointer;
+  width: 100%;
+}
+
+.btn-primary:disabled {
+  opacity: 0.4;
+}
+
+.btn-secondary {
+  background: #e0e0e0;
+  color: var(--text-main);
+  border: none;
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.flex-row { display: flex; }
+.gap-8 { gap: 8px; }
+.align-center { align-items: center; }
+.hidden { display: none !important; }
+.full-width { width: 100%; }
+
+/* Tab Navigation */
+#app-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  padding-bottom: 80px;
+}
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+.tab-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 65px;
+  background: white;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  border-top: 1px solid #eaeaea;
+  z-index: 100;
+}
+.tab-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.tab-btn .icon { font-size: 1.2rem; }
+.tab-btn .label { font-size: 0.7rem; margin-top: 2px; }
+.tab-btn.active { color: var(--primary-color); font-weight: bold; }
+
+/* Bottom navigation bar (Home / To-Dos / Einkauf / Kalender) */
+.bottom-nav {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  height: 70px;
+  background: white;
+  border-radius: 14px;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  z-index: 200;
+}
+.bottom-nav .tab-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: none;
+  background: transparent;
+  padding: 8px 6px;
+}
+.bottom-nav .tab-btn small { display: block; font-size: 0.7rem; }
+
+/* Reserve space so content isn't hidden behind the bottom nav */
+main.content { padding-bottom: 110px; }
+
+/* make content scrollable when page is full */
+main.content { overflow-y: auto; }
+
+/* Dashboard UI */
+.subtext { font-size: 0.85rem; color: var(--text-muted); }
+.header h1 { color: var(--primary-color); font-size: 1.4rem; margin-bottom: 16px; }
+
+.scroll-x {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+}
+
+.member-avatar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.avatar-circle {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.avatar-img {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Larger dashboard members */
+.members-grid {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.member-avatar.large .avatar-circle,
+.member-avatar.large .avatar-img {
+  width: 64px;
+  height: 64px;
+  font-size: 1.1rem;
+}
+.member-avatar[data-title] { position: relative; z-index: 0; }
+.member-avatar[data-title]:hover::after {
+  content: attr(data-title);
+  position: absolute;
+  bottom: -46px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.85);
+  color: white;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  white-space: normal; /* allow wrapping for long names */
+  /* allow tooltip to grow to the layout edges (viewport-based with small margin) */
+  max-width: calc(100vw - 48px);
+  word-break: break-word;
+  text-align: center;
+  z-index: 2000; /* ensure tooltip is above images */
+  box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+}
+
+@media (max-width: 420px) {
+  .member-avatar[data-title]:hover::after { max-width: 160px; font-size: 0.8rem; bottom: -52px; }
+}
+
+.member-avatar { position: relative; display: inline-flex; flex-direction: column; align-items: center; gap:6px; }
+.member-avatar input[type="file"] { display: none; }
+.member-avatar .edit-btn {
+  position: absolute;
+  right: -4px;
+  top: -4px;
+  background: rgba(255,255,255,0.9);
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 8px;
+  padding: 4px 6px;
+  font-size: 0.7rem;
+  cursor: pointer;
+}
+.member-avatar .edit-btn:hover { transform: translateY(-1px); }
+
+/* Tags & Suggestions für Event Member Selector */
+.tag-container { display:flex; flex-wrap:wrap; gap:6px; margin-top:6px; }
+.tag-chip {
+  display:inline-flex; align-items:center; gap:6px; background:#f0f0f0; padding:6px 8px; border-radius:16px; font-size:0.85rem;
+}
+.tag-chip .tag-remove { background: transparent; border: none; cursor: pointer; font-size:0.8rem; }
+.suggestions { list-style:none; padding:6px; margin:0; }
+.suggestion-item { padding:6px 8px; border-radius:6px; cursor:pointer; }
+.suggestion-item:hover { background:#f7f7f7; }
+
+.member-name { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
+
+.vibe-card-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.emoji-avatar {
+  font-size: 32px;
+  background: rgba(0, 122, 255, 0.1);
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.badge {
+  background: rgba(0, 0, 0, 0.05);
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 20px 0 10px 0;
+}
+
+.section-header h2 { font-size: 1.1rem; }
+
+.stack-list { display: flex; flex-direction: column; gap: 10px; }
+
+.room-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: white;
+  padding: 12px;
+  border-radius: 12px;
+}
+
+.room-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(255, 152, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Lists */
+.custom-list {
+  list-style: none;
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.custom-list li {
+  background: white;
+  padding: 8px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.custom-list li.done span {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+/* Für To-Do / Einkaufsliste: durchgestrichene Titel wenn erledigt */
+.todo-list li.done span {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+/* Shopping/drag styles */
+.shopping-item.dragging { opacity: 0.45; }
+.shopping-item.drag-over { outline: 2px dashed rgba(0,0,0,0.08); transform: translateY(2px); }
+.drag-handle { font-size: 1.1rem; opacity: 0.7; }
+
+/* Ensure controls inside item stay fixed relative to the item and don't wrap */
+.shopping-item {white-space: nowrap;}
+.shopping-item > div:first-child {overflow: hidden;text-overflow: ellipsis;}
+.shopping-item .drag-handle {touch-action: none;}
+.shopping-item .drag-handle {touch-action: none;user-select: none;-webkit-user-select: none;}
+.shopping-item.dragging {position: relative;z-index: 2;box-shadow: 0 4px 12px rgba(0,0,0,0.12);}
+.shopping-item.done .shopping-title {
+        text-decoration: line-through;
+        opacity: 0.6;
+        color: var(--text-muted)
+    }
+
+/* Calendar */
+.calendar-card { padding: 12px; }
+.calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.calendar-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 0.75rem; color: var(--text-muted); font-weight: bold; margin-bottom: 6px; gap:4px; }
+.calendar-weekdays > div { padding: 6px 0; }
+.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+/* Alias für HTML-Klasse im Template: .cal-grid */
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+/* subtle transition for month changes on mobile */
+.cal-grid { transition: transform 220ms ease, opacity 200ms ease; }
+.cal-grid.slide-left-out { opacity: 0.45; transform: translateX(-8px); }
+.cal-grid.slide-left-in { opacity: 1; transform: translateX(0); }
+.cal-grid.slide-right-out { opacity: 0.45; transform: translateX(8px); }
+.cal-grid.slide-right-in { opacity: 1; transform: translateX(0); }
+.cal-day { height: 44px; background: white; border-radius: 6px; display: flex; flex-direction: column; align-items: center; padding-top: 4px; font-size: 0.8rem; cursor: pointer; }
+.cal-day.selected { background: var(--primary-color); color: white; }
+.event-bar { height: 4px; border-radius: 2px; }
+
+/* Container for multiple event color stripes inside a day cell */
+.event-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 80%;
+  margin-top: 6px;
+  align-items: center;
+}
+.event-bars .event-bar { width: 100%; }
+
+/* Avatars shown next to calendar event titles (small stacked/horizontal) */
+.cal-event-avatars { display:flex; gap:6px; align-items:center; }
+.cal-event-avatars { position: relative; }
+.cal-avatar-img, .cal-avatar-initials {
+  width:28px; height:28px; border-radius:6px; object-fit:cover; display:inline-block; flex-shrink:0; border: 2px solid white;
+}
+.cal-avatar-initials { color:white; display:flex; align-items:center; justify-content:center; font-size:0.75rem; font-weight:700; }
+.cal-avatar-more { width:28px; height:28px; border-radius:6px; background:#e0e0e0; display:flex; align-items:center; justify-content:center; font-size:0.75rem; }
+
+/* overlapping avatars */
+.cal-event-avatars.overlap { padding-left: 0; gap: 0; }
+.cal-event-avatars.overlap > * { margin-left: -10px; position: relative; }
+.cal-event-avatars.overlap > *:first-child { margin-left: 0; }
+/* increase z-index for later items so they appear on top */
+.cal-event-avatars.overlap > *:nth-child(1) { z-index: 1; }
+.cal-event-avatars.overlap > *:nth-child(2) { z-index: 2; }
+.cal-event-avatars.overlap > *:nth-child(3) { z-index: 3; }
+
+/* small color dots for participants */
+.cal-event-dots { display:flex; gap:6px; align-items:center; margin-right:8px; }
+.cal-event-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; box-shadow: 0 0 0 2px white inset; }
+
+/* Kalender Header (Monatswechsel) */
+.cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.cal-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  text-align: center;
+  flex: 1;
+}
+.cal-header button {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.cal-header button:hover { opacity: 0.95; transform: translateY(-1px); }
+
+
+/* Modals */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal.active { display: flex; }
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: var(--border-radius);
+  width: 90%;
+  max-width: 400px;
+}
+
+/* Simple circular crop UI for member image preview in edit-member-modal */
+.image-cropper {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: inline-block;
+  background: #f0f0f0;
+  border: 2px dashed rgba(0,0,0,0.06);
+}
+.image-cropper img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* When a modal is open, hide the floating bottom-nav to avoid overlap */
+body.modal-open .bottom-nav {
+  transform: translateY(160%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Ensure feedback button stays above modal/backdrop and does not jump into app content */
+body.modal-open .feedback-btn { z-index: 1300; position: fixed; top: 18px; right: 18px; }
+
+/* When modal is open, remove #app-container transform so fixed modals position relative to viewport (avoids clipping inside transformed container) */
+/* NOTE: removed forcing transform:none on #app-container when modal opens because
+   it changed the app scale and caused the UI to shrink. Modals are appended to
+   document.body now so clipping is avoided without removing the transform. */
+
+/* Mobile responsive adjustments */
+@media (max-width: 520px) {
+  :root { --border-radius: 12px; }
+  #app-container { width: 100%; height: 100%; border-radius: 0; }
+  .screen { max-height: none; border-radius: 0; }
+  .container { padding: 12px; }
+  .card { padding: 12px; border-radius: 12px; }
+
+  /* Bottom nav: ensure tappable targets */
+  .bottom-nav { height: 72px; left: 8px; right: 8px; bottom: 8px; }
+  .bottom-nav .tab-btn { padding: 10px 6px; }
+
+  /* Tabs & buttons larger */
+  .btn-primary, .btn-secondary, .btn-link { min-height: 44px; padding: 12px; font-size: 1rem; }
+
+  /* Calendar: make days a bit larger and grid responsive */
+  .calendar-weekdays { font-size: 0.8rem; }
+  .cal-grid { gap: 6px; }
+  .cal-day { height: 56px; padding-top: 6px; font-size: 0.9rem; }
+
+  /* Make modals fullscreen for easier interaction */
+  .modal.active { align-items: flex-end; }
+  .modal-content { width: 100%; max-width: 100%; border-radius: 12px 12px 0 0; padding: 16px; }
+
+  /* Inputs full width and larger touch targets */
+  input[type="text"], input[type="date"], input[type="password"], select { padding: 14px; font-size: 1rem; }
+
+  /* Lists spacing - reduce vertical spacing on small screens */
+  .todo-list li { padding: 12px; }
+  @media (max-width: 480px) {
+    /* halve the vertical spacing for shopping/todo lists on phones */
+    .todo-list li { padding: 6px; }
+  }
+
+  /* Dashboard members stack vertically on small screens */
+  .members-grid { justify-content: flex-start; }
+  .member-avatar.large { width: 100%; flex-direction: row; align-items: center; gap: 12px; padding: 10px; }
+  .member-avatar.large .avatar-circle, .member-avatar.large .avatar-img { width: 48px; height: 48px; }
+
+  /* Reduce transform scaling interference: allow app to be native width */
+  #app-container { transform: none !important; }
+}
+
+/* Very small phones adjustments */
+@media (max-width: 380px) {
+  .cal-day { height: 48px; font-size: 0.85rem; }
+  .modal-content { padding: 12px; }
+}
+
+/* Global mobile optimizations (phones up to 480px) */
+@media (max-width: 480px) {
+  html, body { font-size: 15px; }
+  /* slightly tighter line-heights for mobile */
+  body { line-height: 1.25; }
+
+  /* Make touch targets larger and paddings smaller where needed */
+  button, .btn-primary, .btn-secondary { padding: 10px 12px; min-height: 44px; }
+
+  /* Cards and lists more compact */
+  .card { padding: 12px; }
+  .todo-list li { padding: 6px; }
+
+  /* Bottom nav: larger hit area, but icons slightly smaller to fit */
+  .bottom-nav { height: 70px; }
+  .bottom-nav .tab-btn .icon { font-size: 1.05rem; }
+
+  /* Modal full screen for easier interaction on phones */
+  .modal.active { align-items: flex-end; }
+  .modal-content { width: 100%; max-width: 100%; border-radius: 12px 12px 0 0; padding: 14px; }
+
+  /* Calendar: slightly smaller day height and tighter gaps */
+  .cal-day { height: 48px; padding-top: 4px; font-size: 0.82rem; }
+  .cal-grid { gap: 4px; }
+}
+
+.palette-btn { cursor: pointer; }
+.palette-btn:focus { outline: 2px solid rgba(0,0,0,0.1); }
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+/* Ensure modals appear above everything and full-screen on mobile */
+.modal { z-index: 1400; }
+@media (max-width: 480px) {
+  .modal { align-items: flex-end; }
+  .modal-content { width: 100%; max-width: 100%; border-radius: 12px 12px 0 0; }
+  /* When modal open, make sure bottom-nav hidden and content non-interactive */
+  body.modal-open { overflow: hidden; }
+  body.modal-open .bottom-nav { transform: translateY(140%); }
+}
+
+/* SPLASH SCREEN STYLES */
+#starting-page {
+  /* Keine fixed/fullscreen-Eigenschaften hier – .screen übernimmt Layout */
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  transition: opacity 0.6s ease, visibility 0.6s;
+}
+
+#starting-page.fade-out {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.logo-large {
+  font-size: 4rem;
+  margin-bottom: 10px;
+  animation: bounce 1.5s infinite alternate ease-in-out;
+}
+
+.app-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 6px;
+}
+
+.tagline {
+  color: #7f8c8d;
+  font-size: 1rem;
+  margin-bottom: 20px;
+}
+
+/* Dezenter Lade-Spinner */
+.spinner {
+  width: 30px;
+  height: 30px;
+  border: 3px solid #e0e0e0;
+  border-top: 3px solid #364940;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 10px auto 0;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes bounce {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-10px); }
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Logo-Styling für PNG-Grafiken */
+.logo-png-large {
+  width: 180px;
+  height: auto;
+  margin-bottom: 16px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  /* Behält die dezent schwebende Animation aus deiner style.css bei */
+  animation: bounce 1.5s infinite alternate ease-in-out;
+}
+
+.logo-png-small {
+  width: 100px;
+  height: auto;
+  margin-bottom: 12px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Header logo: keep compact and inline to avoid overlaying app */
+.header-logo {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  display: inline-block;
+  margin-right: 12px;
+  vertical-align: middle;
+  position: relative;
+  z-index: 10;
+}
+
+.inline-logo { width: 18px; height: 18px; vertical-align: -3px; margin-right:6px; }
+
+/* Title/header logo variant (larger) */
+.title-logo { width: 48px; height: auto; vertical-align: middle; margin-left:8px; }
+
+/* Header layout: show home name/code and logo side-by-side */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+}
+.app-header h1, #display-home-title {
+  font-size: 1.05rem;
+  color: var(--primary-color);
+  margin: 0;
+  flex: 1 1 auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.app-header img.title-logo { flex: 0 0 auto; margin-left: 12px; }
+
+/* Ensure header is visible and stays on top of content */
+.app-header {
+  /* keep header in document flow so it doesn't overlap content */
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 12px;
+  padding: 6px 10px;
+  background: transparent;
+}
+.app-header h1 { margin: 0; }
+
+/* Mobile header tweaks: smaller logo and compact spacing */
+@media (max-width: 480px) {
+  .app-header { margin: 8px 8px; padding: 6px; }
+  .app-header h1 { font-size: 0.98rem; }
+  .title-logo { width: 40px; }
+  .header-logo { width: 28px; height: 28px; }
+}
+
+/* Ensure large splash logo is only visible on the starting page */
+#starting-page .logo-png-large { display: block; }
+#main-app .logo-png-large, header .logo-png-large { display: none; }
+
+/* Feedback button top-right */
+.feedback-btn {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.1rem;
+  z-index: 400;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+  cursor: pointer;
+}
+.feedback-btn:active { transform: translateY(1px); }

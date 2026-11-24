@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RoomMood</title>
+  <!-- Enable Add to Home Screen / PWA behavior -->
+  <link rel="manifest" href="netlify/manifest.json">
+  <meta name="theme-color" content="#364940">
+  <meta name="firebase-vapid-key" content="">
+  <meta name="firebase-app-check-site-key" content="">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="RoomMood">
+  <link rel="apple-touch-icon" href="roommoodlogo.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app-container">
+
+  <!-- START / SPLASH SCREEN -->
+  <div id="starting-page" class="screen active">
+    <div class="container center-container">
+      <img src="roommoodlogo.png" alt="roommood Logo" class="logo-png-large">
+      <h1 class="app-title">RoomMood</h1>
+      <p class="tagline">Dein WG-Vibe im Blick</p>
+      <div class="spinner"></div>
+    </div>
+  </div>
+
+  <!-- ANMELDUNG / REGISTRIERUNG -->
+  <div id="registration-page" class="screen">
+    <div class="container center-container">
+      <img src="roommoodlogo.png" alt="roommood Logo" class="logo-png-small">
+      <h2>Herzlich Willkommen!</h2>
+      <p class="subtitle">Richten wir dein Profil für dein Zuhause ein.</p>
+
+      <div id="reg-intro" class="card">
+        <h3>Bist du neu dabei?</h3>
+        <p style="color:var(--text-muted); margin-top:6px;">Wähle, ob du eine neue WG erstellen oder einer bestehenden beitreten möchtest.</p>
+        <div style="display:flex; gap:10px; margin-top:12px;">
+          <button class="btn-primary" onclick="startRegistration(0)">Neu hier</button>
+          <button class="btn-secondary" onclick="startRegistration(1)">Ich habe schon eine WG</button>
+        </div>
+      </div>
+
+      <div id="registration-form" class="hidden">
+        <div class="form-group">
+          <label>Wie heißt du?</label>
+          <input type="text" id="reg-username" placeholder="Dein Name (z.B. Laura)">
+        </div>
+
+        <div style="display:flex; gap:8px; margin-bottom:8px;">
+          <button id="btn-fill-local" class="btn-secondary" type="button" onclick="fillLocalData()">Daten vom Gerät verwenden</button>
+          <button id="btn-back-intro" class="btn-link" type="button" onclick="backToIntro()">← Zurück</button>
+        </div>
+
+        <div class="segmented-control">
+          <button id="btn-mode-0" class="active" onclick="setRegMode(0)">🏠 Neue WG gründen</button>
+          <button id="btn-mode-1" onclick="setRegMode(1)">🔑 WG beitreten</button>
+        </div>
+
+        <!-- Mode 0: WG Gründen -->
+        <div id="mode-0-fields">
+          <div class="form-group">
+            <label>Wie soll deine Unterkunft heißen?</label>
+            <input type="text" id="reg-homename" placeholder="Name deiner WG (z.B. Altbau-Liebe)">
+          </div>
+          <div class="form-group">
+            <label>WG-Passwort festlegen</label>
+            <input type="password" id="reg-create-password" placeholder="Passwort wählen">
+          </div>
+          <div class
+               ="form-group">
+            <label>Passwort wiederholen</label>
+            <input type="password" id="reg-create-password-confirm" placeholder="Passwort wiederholen">
+          </div>
+        </div>
+
+        <!-- Mode 1: WG Beitreten -->
+        <div id="mode-1-fields" class="hidden">
+          <div class="form-group">
+            <label>WG-Code eingeben</label>
+            <input type="text" id="reg-homecode" placeholder="z.B. RM-1024" style="text-transform: uppercase;">
+          </div>
+          <div class="form-group">
+            <label>WG-Passwort eingeben</label>
+            <input type="password" id="reg-join-password" placeholder="Passwort eingeben">
+          </div>
+        </div>
+      </div>
+
+      <p id="reg-error-msg" style="color: #e74c3c; font-size: 0.85rem; margin-bottom: 10px; display: none;"></p>
+
+      <button id="btn-submit-reg" class="btn-primary" onclick="submitRegistration()" disabled>WG gründen & starten <img src="roommoodlogo.png" alt="RoomMood" class="inline-logo"></button>
+    </div>
+  </div>
+
+  <!-- HAUPT-APP -->
+  <div id="main-app" class="screen">
+    <header class="app-header">
+      <img src="roommoodlogo.png" alt="RoomMood" class="header-logo">
+      <h1 id="display-home-title">Deine WG <span id="display-home-code"></span></h1>
+    </header>
+
+    <!-- Feedback Button (fixed top-right) -->
+    <button class="feedback-btn" title="Feedback senden" onclick="openModal('feedback-modal')">?</button>
+
+    <main class="content">
+      <!-- TAB 1: DASHBOARD -->
+      <div id="tab-dashboard" class="tab-content active">
+        <div class="card my-vibe-card">
+          <div class="vibe-header">
+            <div>
+              <h3 id="my-vibe-name">Dein Name</h3>
+              <p id="my-vibe-location" style="font-size: 0.85rem; color: gray;"><img src="roommoodlogo.png" alt="RoomMood" class="inline-logo"> Zuhause</p>
+            </div>
+            <div id="my-vibe-emoji" class="vibe-emoji">😎</div>
+          </div>
+          <p id="my-vibe-status" style="margin-top: 5px; font-style: italic;">Entspannt</p>
+          <button class="btn-secondary" style="margin-top: 10px; width: 100%;" onclick="openModal('edit-mood-modal')">Vibe und Status ändern</button>
+        </div>
+
+        <div class="card">
+          <h3>Kurzer Tages-Check-in</h3>
+          <p style="color:var(--text-muted); margin:6px 0 12px;">Lass dich einmal täglich zu einer zufälligen Zeit zwischen 8 und 22 Uhr erinnern.</p>
+          <p id="daily-reminder-status" role="status" aria-live="polite" style="font-size:0.9rem; margin-bottom:10px;">Erinnerung deaktiviert.</p>
+          <button id="enable-daily-reminder" class="btn-primary" style="width:100%;" onclick="enableDailyReminder()">Erinnerung aktivieren</button>
+          <button id="disable-daily-reminder" class="btn-secondary hidden" style="width:100%;" onclick="disableDailyReminder()">Erinnerung deaktivieren</button>
+        </div>
+
+        <h3>WG-Mitglieder</h3>
+        <div id="members-list" class="members-grid"></div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px;">
+          <h3>Räume und Vibe-Räume</h3>
+        </div>
+        <div style="display:flex; gap:10px; margin-bottom:10px;">
+          <button class="btn-secondary" onclick="openModal('add-room-modal')">+ Raum</button>
+          <button class="btn-secondary" onclick="openModal('add-moodroom-modal')">+ Vibe-Raum</button>
+        </div>
+
+        <div id="physical-rooms-list"></div>
+        <div id="mood-rooms-list" style="margin-top:10px;"></div>
+      </div>
+
+      <!-- TAB 2: TO-DOS & PUTZPLAN -->
+      <div id="tab-todos" class="tab-content">
+        <div class="segmented-control">
+          <button id="btn-todo-0" class="active" onclick="setTodoSegment(0)">Putzplan</button>
+          <button id="btn-todo-1" onclick="setTodoSegment(1)">Aufgaben</button>
+        </div>
+
+        <!-- Putzplan Segment -->
+        <div id="segment-chores">
+          <div class="card form-card">
+            <h4>Putzaufgabe hinzufügen</h4>
+            <input type="text" id="chore-title" placeholder="Aufgabe (z.B. Bad putzen)">
+            <label style="margin-top:8px; font-size:0.9rem;">Fälligkeitsdatum (optional)</label>
+            <input type="date" id="chore-duedate">
+            <select id="chore-assignee" multiple size="4" style="width:100%; padding:8px; border-radius:8px;">
+              <!-- Optionen werden dynamisch mit Mitgliedern gefüllt -->
+            </select>
+            <select id="chore-freq">
+                <option value="Wöchentlich">Wöchentlich</option>
+                <option value="Monatlich">Monatlich</option>
+                <option value="Beliebig">Beliebig</option>
+            </select>
+            <button class="btn-primary" onclick="addChore()">Aufgabe erstellen</button>
+          </div>
+          <ul id="chores-list" class="todo-list"></ul>
+        </div>
+
+        <!-- Aufgaben Segment -->
+        <div id="segment-tasks" class="hidden">
+          <div class="card form-card">
+            <h4>Einmalige Aufgabe</h4>
+            <input type="text" id="task-title" placeholder="Aufgabe (z.B. Internet bezahlen)">
+            <input type="date" id="task-date">
+            <button class="btn-primary" onclick="addTask()">Aufgabe hinzufügen</button>
+          </div>
+          <ul id="tasks-list" class="todo-list"></ul>
+        </div>
+      </div>
+
+      <!-- TAB 3: EINKAUFSLISTE -->
+      <div id="tab-shopping" class="tab-content">
+        <h3>Einkaufsliste</h3>
+        <div class="add-bar">
+          <input type="text" id="shopping-input" placeholder="Artikel hinzufügen..." onkeypress="if(event.key === 'Enter') addShoppingItem()">
+          <button class="btn-primary" onclick="addShoppingItem()">Hinzufügen</button>
+        </div>
+        <ul id="shopping-list" class="todo-list"></ul>
+      </div>
+
+      <!-- TAB 4: KALENDER -->
+      <div id="tab-calendar" class="tab-content">
+        <div class="cal-header">
+          <button onclick="changeMonth(-1)">◀</button>
+          <h3 id="cal-month-title">Monat</h3>
+          <button onclick="changeMonth(1)">▶</button>
+        </div>
+        <div class="calendar-weekdays">
+          <div>Mo</div>
+          <div>Di</div>
+          <div>Mi</div>
+          <div>Do</div>
+          <div>Fr</div>
+          <div>Sa</div>
+          <div>So</div>
+        </div>
+        <div id="calendar-days-grid" class="cal-grid"></div>
+        <button class="btn-primary" style="margin-top:15px;" onclick="openModal('add-event-modal')">+ Event eintragen</button>
+        <ul id="calendar-events-list" class="todo-list" style="margin-top:15px;"></ul>
+        <!-- Past events collapsible -->
+        <div style="margin-top:12px;">
+          <button id="past-events-toggle" class="btn-link" aria-expanded="false" style="font-weight:bold;" onclick="togglePastEvents()">Vergangene Termine</button>
+          <div id="past-events-content" class="hidden" style="margin-top:8px;"></div>
+        </div>
+      </div>
+    </main>
+
+    <!-- BOTTOM NAVIGATION -->
+    <nav class="bottom-nav">
+      <button class="tab-btn active" onclick="switchTab('tab-dashboard')"><span>🏠</span><small>Home</small></button>
+      <button class="tab-btn" onclick="switchTab('tab-todos')"><span>🧹</span><small>To-Dos</small></button>
+      <button class="tab-btn" onclick="switchTab('tab-shopping')"><span>🛒</span><small>Einkauf</small></button>
+      <button class="tab-btn" onclick="switchTab('tab-calendar')"><span>📅</span><small>Kalender</small></button>
+    </nav>
+  </div>
+
+  <!-- MODALS -->
+  <!-- Edit Chore Modal (placed outside app-container so it is fixed to viewport) -->
+  <div id="edit-chore-modal" class="modal">
+    <div class="modal-content">
+      <h3>Putzaufgabe bearbeiten</h3>
+      <div class="form-group">
+        <label>Titel</label>
+        <input type="text" id="edit-chore-title">
+      </div>
+      <div class="form-group">
+        <label>Mitglieder zuweisen</label>
+        <select id="edit-chore-assignee" multiple size="6" style="width:100%; padding:8px; border-radius:8px;"></select>
+      </div>
+      <div class="form-group">
+        <label>Fälligkeitsdatum</label>
+        <input type="date" placeholder="tt.mm.jjjj" id="edit-chore-duedate">
+      </div>
+      <div class="form-group">
+        <label>Frequenz</label>
+        <select id="edit-chore-freq">
+          <option>Wöchentlich</option>
+          <option>Monatlich</option>
+          <option>Beliebig</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeModal('edit-chore-modal')">Abbrechen</button>
+        <button class="btn-link" onclick="deleteChore(editingChoreId)">Löschen</button>
+        <button class="btn-primary" onclick="saveEditChore()">Speichern</button>
+      </div>
+    </div>
+  </div>
+  <div id="edit-mood-modal" class="modal">
+    <div class="modal-content">
+      <h3>Vibe und Status anpassen</h3>
+      <label>Emoji auswählen</label>
+      <select id="edit-emoji-select"></select>
+      <label>Statustext</label>
+      <input type="text" id="edit-status-input" placeholder="Wie geht's dir?">
+      <label>Aufenthalts-Emoji</label>
+      <select id="edit-loc-emoji-select"></select>
+      <label>Wo bist du?</label>
+      <input type="text" id="edit-loc-text-input" placeholder="z.B. Uni, Zuhause, Arbeit">
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeModal('edit-mood-modal')">Abbrechen</button>
+        <button class="btn-primary" onclick="saveVibe()">Speichern</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="add-room-modal" class="modal">
+    <div class="modal-content">
+      <h3>Raum hinzufügen</h3>
+      <input type="text" id="new-room-name" placeholder="Raumname (z.B. Küche)">
+      <input type="text" id="new-room-cleanliness" placeholder="Zustand (z.B. Blitzblank)">
+      <input type="text" id="new-room-comment" placeholder="Notiz/Kommentar">
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeModal('add-room-modal')">Abbrechen</button>
+        <button class="btn-primary" onclick="addRoom()">Hinzufügen</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="edit-room-modal" class="modal">
+    <div class="modal-content">
+      <h3>Raum bearbeiten</h3>
+      <input type="text" id="edit-room-name" placeholder="Raumname">
+      <input type="text" id="edit-room-cleanliness" placeholder="Zustand">
+      <input type="text" id="edit-room-comment" placeholder="Notiz/Kommentar">
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeModal('edit-room-modal')">Abbrechen</button>
+        <button class="btn-primary" onclick="saveEditRoom()">Speichern</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="add-moodroom-modal" class="modal">
+    <div class="modal-content">
+      <h3>Vibe-Raum hinzufügen</h3>
+      <input type="text" id="new-moodroom-name" placeholder="Name (z.B. Gemeinschafts-Vibe)">
+      <input type="text" id="new-moodroom-note" placeholder="Beschreibung/Frage">
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeModal('add-moodroom-modal')">Abbrechen</button>
+        <button class="btn-primary" onclick="addMoodRoom()">Hinzufügen</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="edit-moodroom-modal" class="modal">
+    <div class="modal-content">
+      <h3>Vibe-Raum bearbeiten</h3>
+      <input type="text" id="edit-moodroom-name" placeholder="Name">
+      <input type="text" id="edit-moodroom-note" placeholder="Beschreibung/Frage">
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeModal('edit-moodroom-modal')">Abbrechen</button>
+        <button class="btn-primary" onclick="saveEditMoodRoom()">Speichern</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="express-mood-modal" class="modal">
+    <div class="modal-content">
+      <h3>Gefühl ausdrücken</h3>
+      <select id="express-emoji-select"></select>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeModal('express-mood-modal')">Abbrechen</button>
+        <button class="btn-primary" onclick="saveExpressMood()">Speichern</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Feedback Modal -->
+  <div id="feedback-modal" class="modal">
+    <div class="modal-content">
+      <h3>Feedback an den Entwickler</h3>
+      <div class="form-group">
+        <label>Deine Nachricht</label>
+        <textarea id="feedback-text" rows="5" style="width:100%; padding:8px; border-radius:8px;"></textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeModal('feedback-modal')">Abbrechen</button>
+        <button class="btn-primary" onclick="sendFeedback()">Senden</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="add-event-modal" class="modal">
+    <div class="modal-content">
+      <h3>Termin eintragen</h3>
+      <input type="text" id="event-title" placeholder="Titel (z.B. WG-Party)">
+      <label>Wen betrifft es?</label>
+      <select id="event-" placeholder="Personen" multiple size="4" style="width:100%; padding:8px; border-radius:8px;">
+        <!-- Optionen werden dynamisch mit Mitgliedern gefüllt -->
+      </select>
+      <label>Startdatum</label>
+      <input type="date" placeholder="tt.mm.jjjj" id="event-start">
+      <label>Enddatum</label>
+      <input type="date" placeholder="tt.mm.jjjj" id="event-end">
+      <div style="margin-top:8px; display:flex; align-items:center; gap:8px;">
+        <input type="checkbox" id="event-repeat">
+        <label for="event-repeat" style="margin:0;">jährlich wiederholen</label>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeModal('add-event-modal')">Abbrechen</button>
+        <button class="btn-primary" onclick="addCalendarEvent()">Hinzufügen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Event Modal -->
+  <div id="edit-event-modal" class="modal">
+    <div class="modal-content">
+      <h3>Termin bearbeiten</h3>
+      <input type="text" id="edit-event-title" placeholder="Titel">
+      <label>Wen betrifft es?</label>
+      <select id="edit-event-person" multiple size="4" style="width:100%; padding:8px; border-radius:8px;"></select>
+      <label>Startdatum</label>
+      <input type="date" id="edit-event-start">
+      <label>Enddatum</label>
+      <input type="date" id="edit-event-end">
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeModal('edit-event-modal')">Abbrechen</button>
+        <button class="btn-link" onclick="deleteEvent(editingEventId)">Löschen</button>
+        <button class="btn-primary" onclick="saveEditEvent()">Speichern</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Member Modal -->
+  <div id="edit-member-modal" class="modal">
+    <div class="modal-content">
+      <h3>Mitglied bearbeiten</h3>
+      <div class="form-group">
+        <label>Name</label>
+        <input type="text" id="edit-member-name" disabled>
+      </div>
+      <div class="form-group">
+        <label>Profilbild (optional)</label>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <div class="image-cropper" id="edit-member-preview"></div>
+          <input type="file" id="edit-member-image" accept="image/*" onchange="handleEditMemberImageChange(event)">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Farbe auswählen</label>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <input type="color" id="edit-member-color" value="#364940">
+          <!-- quick palette buttons -->
+          <div id="member-color-palette" style="display:flex; gap:6px;">
+            <button type="button" class="palette-btn" data-color="#FF6B6B" style="width:24px; height:24px; border-radius:6px; border:none;"></button>
+            <button type="button" class="palette-btn" data-color="#6BCB77" style="width:24px; height:24px; border-radius:6px; border:none;"></button>
+            <button type="button" class="palette-btn" data-color="#4D96FF" style="width:24px; height:24px; border-radius:6px; border:none;"></button>
+            <button type="button" class="palette-btn" data-color="#FFC75F" style="width:24px; height:24px; border-radius:6px; border:none;"></button>
+            <button type="button" class="palette-btn" data-color="#845EC2" style="width:24px; height:24px; border-radius:6px; border:none;"></button>
+          </div>
+        </div>
+      </div>
+      <!--<div class="form-group">
+        <label>Emoji</label>
+        <select id="edit-member-emoji"></select>
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <input type="text" id="edit-member-status" placeholder="z. B. Am Lernen">
+      </div>
+      <div class="form-group">
+        <label>Aufenthalts-Emoji</label>
+        <select id="edit-member-locemoji"></select>
+      </div>
+      <div class="form-group">
+        <label>Wo bist du?</label>
+        <input type="text" id="edit-member-loctext" placeholder="z. B. WG-Küche">
+      </div>-->
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeModal('edit-member-modal')">Abbrechen</button>
+        <button class="btn-primary" onclick="saveEditMember()">Speichern</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="app.js"></script>
+  </div>
+</body>
+</html>
